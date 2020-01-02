@@ -32,15 +32,13 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
 
-  // pinMode(DHTPIN, INPUT_PULLUP);
-
   pinMode(LED_RED_PIN, OUTPUT);
   pinMode(LED_YELLOW_PIN, OUTPUT);
   pinMode(LED_GREEN_PIN, OUTPUT);
   pinMode(LED_WHITE_PIN, OUTPUT);
 
   dhtSensor.begin();
-  
+
   digitalWrite(LED_RED_PIN, LED_OFF);
   digitalWrite(LED_YELLOW_PIN, LED_OFF);
   digitalWrite(LED_GREEN_PIN, LED_OFF);
