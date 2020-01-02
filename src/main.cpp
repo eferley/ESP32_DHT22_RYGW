@@ -2,6 +2,8 @@
 /* 
  * Temperature and Humidity sensor on ESP32 with Web Server
  */
+#include <WiFi.h>
+#include <FS.h>                     // Required for ESP Async WebServer
 #include "DHT.h"
 
 #define LED_RED_PIN       0
