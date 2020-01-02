@@ -1,5 +1,7 @@
 #include <Arduino.h>
-
+/* 
+ * Temperature and Humidity sensor on ESP32 with Web Server
+ */
 #include "DHT.h"
 
 #define LED_RED_PIN       0
@@ -28,7 +30,8 @@ float fSndSpd;            // Sound Speed (m/s)
 unsigned long ulTime;     // current time (milliseconds)
 unsigned long ulT0;       // last measurement time (milliseconds)
 
-void setup() {
+void setup()
+{
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
 
@@ -45,10 +48,12 @@ void setup() {
   digitalWrite(LED_WHITE_PIN, LED_OFF);
 
   ulT0 = millis();
-}
+} // void setup()
 
-void loop() {
+void loop()
+{
   ulTime = millis();
+
   if (ulTime - ulT0 > DHTMEASURETIME)       // Take a measurement every DHTMEASURETIME milliseconds
   {
     fTmp = dhtSensor.readTemperature(false);
@@ -95,9 +100,6 @@ void loop() {
       digitalWrite(LED_WHITE_PIN, LED_ON);
     }
   } // if (ulTime - ulT0 > DHTMEASURETIME)
-  else
-  {
-    delayMicroseconds(100);
-  }
-  
-}
+
+  delayMicroseconds(100);
+} // void loop()
