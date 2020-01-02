@@ -7,6 +7,8 @@
 #include <FS.h>                     // Required for ESP Async WebServer
 #include "DHT.h"
 #include <ESPAsyncWebServer.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
 #define LED_RED_PIN       0
 #define LED_YELLOW_PIN    4
@@ -39,6 +41,14 @@ const char *pWifiPassword = "A1C9262676C5E4F9692079E703";
 // Create AsyncWebServer object on port 80
 AsyncWebServer oWebServer(80);
 
+// Create UDP client for NTP
+WiFiUDP ntpUDP;
+
+// You can specify the time server pool and the offset (in seconds, can be
+// changed later with setTimeOffset() ). Additionaly you can specify the
+// update interval (in milliseconds, can be changed using setUpdateInterval() ).
+NTPClient clientNTP(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
+
 unsigned long ulTime;     // current time (milliseconds)
 unsigned long ulT0;       // last measurement time (milliseconds)
 
@@ -66,24 +76,35 @@ const char index_html[] PROGMEM = R"rawliteral(
   </style>
 </head>
 <body>
-  <h2>Epilobe Server</h2>
+  <h2>Y FAIT BEAU, Y FAIT CHAUD !</h2>
+  <p>
+    <span id="thetime">%THETIME%</span>
+  </p>
   <p>
     <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
-    <span class="dht-labels">Temperature</span> 
+    <span class="dht-labels">Temp. : </span> 
     <span id="temperature">%TEMPERATURE%</span>
     <sup class="units">&deg;C</sup>
   </p>
   <p>
     <i class="fas fa-tint" style="color:#00add6;"></i> 
-    <span class="dht-labels">Humidity</span>
+    <span class="dht-labels">Taux Humid. : </span>
     <span id="humidity">%HUMIDITY%</span>
     <sup class="units">%</sup>
   </p>
-  <p>
-    <span id="thetime">%THETIME%</span>
-  </p>
 </body>
 <script>
+setInterval(function ( ) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("thetime").innerHTML = this.responseText;
+    }
+  };
+  xhttp.open("GET", "/thetime", true);
+  xhttp.send();
+}, 10000 ) ;
+
 setInterval(function ( ) {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
@@ -112,6 +133,7 @@ setInterval(function ( ) {
 String processOutput(const String& var);
 String outputTemperature();
 String outputHumidity();
+String outputTime();
 
 
 void setup()
@@ -144,6 +166,9 @@ void setup()
   // Print ESP32 Local IP Address
   Serial.println(WiFi.localIP());
 
+  // Initialize NTP client
+  clientNTP.begin();
+
   // Route for root / web page
   oWebServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/html", index_html, processOutput);
@@ -153,6 +178,9 @@ void setup()
   });
   oWebServer.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/plain", outputHumidity().c_str());
+  });
+  oWebServer.on("/thetime", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/plain", outputTime().c_str());
   });
 
   // Start server
@@ -177,6 +205,10 @@ void loop()
   {
     // Serial.println();
     digitalWrite(LED_BUILTIN, LED_ON);
+    clientNTP.update();
+    Serial.println(clientNTP.getFormattedTime());
+
+    // Get readings from sensor
     fTmp = dhtSensor.readTemperature(false);
     fHum = dhtSensor.readHumidity();
     // Get Heat Index
@@ -220,6 +252,7 @@ void loop()
       digitalWrite(LED_GREEN_PIN, LED_OFF);
       digitalWrite(LED_WHITE_PIN, LED_ON);
     }
+
     digitalWrite(LED_BUILTIN, LED_OFF);
   } // if (ulTime - ulT0 > DHTMEASURETIME)
 
@@ -237,6 +270,9 @@ String processOutput(const String& var)
   }
   else if(var == "HUMIDITY"){
     return outputHumidity();
+  }
+  else if(var == "THETIME"){
+    return outputTime();
   }
   return String();
 } // String processOutput(const String& var)
@@ -268,4 +304,10 @@ String outputHumidity()
     return String(fHum);
   }
 } // String outputHumidity()
+//-------------------------------------
+
+String outputTime()
+{
+  return String(clientNTP.getFormattedTime());
+} // String outputTime()
 //-------------------------------------
