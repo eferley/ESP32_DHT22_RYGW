@@ -1,5 +1,5 @@
 #include <Arduino.h>
-/* 
+/*
  * Temperature and Humidity sensor on ESP32 with Async Web Server
  * inspired from https://randomnerdtutorials.com/esp32-dht11-dht22-temperature-humidity-web-server-arduino-ide/
  */
@@ -35,8 +35,8 @@ float fHtIdx;             // Heat Index (Celcius)
 float fSndSpd;            // Sound Speed (m/s)
 
 // WIFI and AsyncWebServer object
-const char *pWifiSsid = "Livebox-BF53";
-const char *pWifiPassword = "A1C9262676C5E4F9692079E703";
+const char *pWifiSsid = "BF53newSSID";
+const char *pWifiPassword = "nEwPaSs12!/";
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer oWebServer(80);
@@ -81,13 +81,13 @@ const char index_html[] PROGMEM = R"rawliteral(
     <span id="thetime">%THETIME%</span>
   </p>
   <p>
-    <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
-    <span class="dht-labels">Temp. : </span> 
+    <i class="fas fa-thermometer-half" style="color:#059e8a;"></i>
+    <span class="dht-labels">Temp. : </span>
     <span id="temperature">%TEMPERATURE%</span>
     <sup class="units">&deg;C</sup>
   </p>
   <p>
-    <i class="fas fa-tint" style="color:#00add6;"></i> 
+    <i class="fas fa-tint" style="color:#00add6;"></i>
     <span class="dht-labels">Taux Humid. : </span>
     <span id="humidity">%HUMIDITY%</span>
     <sup class="units">%</sup>
@@ -281,7 +281,7 @@ String processOutput(const String& var)
 String outputTemperature()
 {
   // Check if any reads failed and exit early (to try again).
-  if (isnan(fTmp)) {    
+  if (isnan(fTmp)) {
     Serial.println("Failed to get Temperature from DHT sensor!");
     return "--";
   }
