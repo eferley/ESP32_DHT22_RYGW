@@ -29,10 +29,11 @@
 // Temp./Humidity sensor object
 DHT dhtSensor(DHTPIN, DHTTYPE);
 
-float fTmp;               // Temperature (Celcius)
-float fHum;               // Humidity (percent)
-float fHtIdx;             // Heat Index (Celcius)
-float fSndSpd;            // Sound Speed (m/s)
+float fTmp;                       // Temperature (Celcius)
+float fHum;                       // Humidity (percent)
+float fHtIdx;                     // Heat Index (Celcius)
+float fSndSpd;                    // Sound Speed (m/s)
+String ulMeasureTime;             // measurement time (HH:MM:SS)
 
 // WIFI and AsyncWebServer object
 const char *pWifiSsid = "BF53newSSID";
@@ -168,6 +169,11 @@ void setup()
 
   // Initialize NTP client
   clientNTP.begin();
+  clientNTP.update();
+
+  Serial.println();
+  Serial.print("Ready ! Current time : "); Serial.println(clientNTP.getFormattedTime());
+  Serial.println();
 
   // Route for root / web page
   oWebServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -206,7 +212,7 @@ void loop()
     // Serial.println();
     digitalWrite(LED_BUILTIN, LED_ON);
     clientNTP.update();
-    Serial.println(clientNTP.getFormattedTime());
+    ulMeasureTime = clientNTP.getFormattedTime();
 
     // Get readings from sensor
     fTmp = dhtSensor.readTemperature(false);
@@ -218,11 +224,12 @@ void loop()
 
     ulT0 = ulTime;
 
+    Serial.print(ulMeasureTime); Serial.print (" - ");
     Serial.print("Temp.  : "); Serial.print(fTmp, 1); Serial.print(" C");
     Serial.print(" - Humid. : " ); Serial.print(fHum, 1); Serial.print(" %");
     Serial.print(" - Heat Idx. : " ); Serial.print(fHtIdx, 1); Serial.print(" C");
     Serial.print( " - Snd.Sp.: " ); Serial.print(fSndSpd, 1); Serial.print( " m/s " );
-    // Serial.println();
+    Serial.println();
 
     if (fTmp >= TEMP_RED) {
       Serial.println(" => Red");
@@ -308,6 +315,6 @@ String outputHumidity()
 
 String outputTime()
 {
-  return String(clientNTP.getFormattedTime());
+  return ulMeasureTime;
 } // String outputTime()
 //-------------------------------------
